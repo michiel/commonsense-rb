@@ -534,6 +534,134 @@ module Commonsense
     # Sensors triggers notifications
     #
 
+    def sensors_triggers_notifications_get
+    end
+
+    def sensors_triggers_notifications_delete
+    end
+
+    def sensors_triggers_notifications_post_parameters
+		  # {'notification':{'id':0}}
+    end
+
+    def sensors_triggers_notifications_post
+    end
+
+    #
+    # Notifications
+    #
+
+    def notifications_get
+    end
+
+    def notifications_delete
+    end
+
+    def notifications_post_parameters
+		  # {'notification':{'type':'url, email', 'text':'herpaderp', 'destination':'http://api.sense-os.nl/scripts'}}
+    end
+
+    def notifications_post
+    end
+
+    #
+    # Devices
+    #
+
+    def sensors_add_to_device_parameters
+      # {'device':{'id':0, 'type':'', 'uuid':0}}
+    end
+
+    def sensor_add_to_device
+    end
+
+    #
+    # Groups
+    #
+
+    def groups_get_parameters
+    end
+
+    def groups_get
+    end
+
+    def groups_delete
+    end
+
+    def groups_post_parameters
+      # {'group': {'name':''}}
+    end
+
+    def groups_post
+    end
+
+    def groups_put_parameters
+    end
+
+    def groups_put
+    end
+
+    #
+    # Groups & Users
+    #
+
+    def groups_users_get_parameters
+      {
+        'details' => 'full'
+      }
+    end
+
+    def groups_users_get(parameters, group_id)
+    end
+
+    def groups_users_post_parameters
+		  # {"users":[{"user":{"id":"", "username":""}}]}
+    end
+
+    def groups_users_delete(group_id, user_id)
+    end
+
+    #
+    # States
+    #
+    
+    def states_default_check
+      sense_api_call('/states/default/check.json', :get)
+    end
+
+    #
+    # Groups & Sensors
+    #
+
+    def groups_sensors_post(group_id, sensors)
+      sense_api_call("/groups/#{group_id}/sensors.json", :post, sensors)
+    end
+
+    def groups_sensors_get(groupd_id, parameters)
+      sense_api_call("/groups/#{group_id}/sensors.json", :get, parameters)
+    end
+
+    def groups_sensors_delete(group_id, sensor_id)
+      sense_api_call("/groups/#{group_id}/sensors/#{sensor_id}.json", :delete)
+    end
+
+    #
+    # Domains
+    #
+
+    def domains_get_parameters
+		  {
+        'details'     => 'full',
+        'page'        => 0,
+        'per_page'    => 100,
+        'total'       => 0,
+        'member_type' => 'member'
+      }
+    end
+
+
+
+
 
 
 
