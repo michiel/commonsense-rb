@@ -424,6 +424,118 @@ module Commonsense
     #
 
 
+    def create_user_parameters
+      # XXX Hard-coded test user? 
+      {
+        'user' => {
+          'email'    => 'user@example.com',
+          'username' => 'herpaderp',
+          'password' => '098f6bcd4621d373cade4e832627b4f6',
+          'name'     => 'foo',
+          'surname'  => 'bar',
+          'mobile'   => '0612345678'
+        }
+      }
+    end
+
+    def create_user
+    end
+
+    def users_get_current
+    end
+
+    def users_update
+    end
+
+    def users_delete
+    end
+
+    #
+    # Events
+    #
+
+    def events_notifications_get
+    end
+
+    def events_notifications_delete
+    end
+
+    def events_notifications_post_parameters
+      {
+        'event_notification' => {
+          'name'            => 'my_event',
+          'event'           => 'add_sensor',
+          'notification_id' => 0,
+          'priority'        => 0
+        }
+      }
+    end
+
+    def events_notifications_post
+    end
+
+    #
+    # Triggers
+    #
+
+    def triggers_get
+    end
+
+    def triggers_delete
+    end
+
+    def triggers_post_parameters
+      {
+        'trigger' => {
+          'name'       => '',
+          'expression' => '',
+          'inactivity' => 0
+        }
+      }
+    end
+
+    def triggers_post
+    end
+
+    #
+    # Sensors triggers
+    #
+
+    def sensors_triggers_get
+    end
+
+    def sensors_triggers_delete
+    end
+
+    def sensors_triggers_post_parameters
+      {
+        'trigger' => {
+          'id' => 0
+        }
+      }
+    end
+
+    def sensors_triggers_post
+    end
+
+    def sensors_triggers_put
+    end
+
+    def sensors_triggers_toggle_active_parameters
+      {
+        'active' => 1
+      }
+    end
+
+    def sensors_triggers_toggle_active
+    end
+
+    #
+    # Sensors triggers notifications
+    #
+
+
+
 
 
 
