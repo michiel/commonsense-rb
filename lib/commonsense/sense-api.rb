@@ -1,4 +1,6 @@
 require 'open-uri'
+require 'net/http'
+require 'net/https'
 
 module Commonsense
 
@@ -14,8 +16,8 @@ module Commonsense
       @session_id     = args[:session_id] || ""
       @status         = 0
       @headers        = {}
-      @response       = ""
-      @error          = ""
+      @response       = nil
+      @error          = nil
       @verbose        = false
       @server         = :live
       @server_url     = 'api.sense-os.nl'
@@ -74,6 +76,7 @@ module Commonsense
 
     #
     # Base API calls
+    # XX : This method could benefit from some refactoring
     #
 
     def sense_api_call(url, method, parameters={}, headers={})
@@ -129,14 +132,59 @@ module Commonsense
             end
           end
 
-
-
         when :api_key
+          parameters['API_KEY'] = @api_key
+          if (method == :get or method == :delete)
+            heads["Content-type"] = "application/x-www-form-urlencoded"
+            http_url = "#{@url}?#{URI.encode_www_form(parameters)}"
+          else
+            body = parameters.to_json
+          end
 
         else
+          @status = 418
+          return false
         end
+
       end
 
+      #
+      # Call server
+      # TODO : move to own method
+      #
+
+      begin
+        server = Net::HTTP.new(@server_url, @use_https ? 443 : 80)
+        server.use_ssl = @use_https
+
+        server.start do |http|
+          klass = case @method
+          when :get then Net::HTTP::Get
+          when :post then Net::HTTP::Post
+          when :delete then Net::HTTP::Delete
+          else
+            raise Exception "No valid http method passed!"
+          end
+          request  = klass.new(url)
+          response = http.request(request)
+          resp     = response.body
+        end
+
+      rescue SocketError
+        raise "Host " + host + " unavailable"
+      end
+
+      # @headers  = {}
+      # @response = 
+      # @stats    = @response.status
+
+      # TODO : Set headers from response - sets cookies?
+
+      if @status == 200 || @status == 201 || @status == 302
+        true
+      else
+        false
+      end
 
     end
 
@@ -155,8 +203,76 @@ module Commonsense
     end
 
     def authenticate_session_id(username, password)
+      set_authentication_method(:authenticating_session_id)
+
+      parameters = {
+        'username' => username,
+        'password' => password
+      }
+
+      response = {}
+
+      if sense_api_call('/login.json', :post, parameters)
+
+        begin
+          response = JSON.parse(@response)
+        rescue Exception => e
+          response = {}
+          set_not_authenticated("notjson : #{e.to_s}")
+          return false
+        end
+
+        if response['session_id'].nil?
+          set_not_authenticated('no session_id')
+          false
+        else
+          @session_id = response['session_id']
+          set_authentication_method(:session_id)
+          false
+        end
+
+      else
+        set_not_authenticated('api call unsuccessful')
+        false
+      end
     end
 
+    def logout_session_id
+      if sense_api_call('/logout.json', :post)
+        set_authentication_method(:not_authenticated)
+      else
+        @error = 'api call unsuccessful'
+      end
+    end
+
+    def set_not_authenticated(reason='no idea')
+      set_authentication_method(:not_authenticated)
+      @error = reason
+      false
+    end
+
+    #
+    # TODO : OAuth
+    # 
+
+    #
+    # Sensors
+    #
+
+    def sensors_get_parameters
+      { 
+        'page'     => 0,
+        'per_page' => 100,
+        'shared'   => 0,
+        'owned'    => 0,
+        'physical' => 0,
+        'details'  => 'full'
+      }
+    end
+
+    def sensors_get(parameters={}, sensor_id=-1)
+      url = ''
+    end
 
 
   end
