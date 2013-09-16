@@ -272,7 +272,162 @@ module Commonsense
 
     def sensors_get(parameters={}, sensor_id=-1)
       url = ''
+      if !parameters.empty? && sensor_id > -1
+        url = "/sensors/#{sensor_id}.json"
+      else
+        url = "/sensors.json"
+      end
+
+      sense_api_call(url, :get, parameters)
     end
+
+    def sensors_delete(sensor_id)
+      url = "/sensors/#{sensor_id}.json"
+      sense_api_call(url, :delete)
+    end
+
+    def sensors_post_parameters
+      {
+      'sensor' => {
+        'name'           => '',
+        'display_name'   => '',
+        'device_type'    => '',
+        'pager_type'     => '',
+        'data_type'      => '',
+        'data_structure' => ''
+        }
+      }
+    end
+
+    def sensors_post(parameters={})
+      url = "/sensors.json"
+      sense_api_call(url, :post, parameters)
+    end
+
+    def sensors_put(sensor_id, parameters={})
+      url = "/sensors/#{sensor_id}.json"
+      sense_api_call(url, :put, parameters)
+    end
+
+    #
+    # metatags
+    #
+
+    def sensors_metatags_get(parameters={}, namespace='default')
+      parameters['namespace'] = namespace
+      url = "/sensors/metatags.json"
+      sense_api_call(url, :get, parameters)
+    end
+
+    def group_sensors_metatags_get(group_id, parameters={}, namespace='default')
+      parameters['namespace'] = namespace
+      url = "/groups/#{group_id}/sensors/metatags.json"
+      sense_api_call(url, :get, parameters)
+    end
+
+    def sensor_metatag_get(sensor_id, parameters={}, namespace='default')
+      parameters['namespace'] = namespace
+      url = "/sensors/#{sensor_id}/sensors/metatags.json"
+      sense_api_call(url, :get, parameters)
+    end
+
+    def sensor_metatags_post(sensor_id, metatags, parameters={}, namespace='default')
+      parameters['namespace'] = namespace
+      url = "/sensors/#{sensor_id}/metatags.json?namespace=#{namespace}"
+      sense_api_call(url, :post, parameters)
+    end
+
+    def sensor_metatags_put(sensor_id, metatags, parameters={}, namespace='default')
+      parameters['namespace'] = namespace
+      url = "/sensors/#{sensor_id}/metatags.json?namespace=#{namespace}"
+      sense_api_call(url, :put, parameters)
+    end
+
+    def sensor_metatags_delte
+    end
+
+    def sensors_find
+    end
+
+    def group_sensors_find
+    end
+
+    def metatag_distinct_values_get
+    end
+
+    #
+    # Sensor data
+    #
+
+    def sensor_data_get_parameters
+      {
+        'page'       => 0,
+        'per_page'   => 100,
+        'start_date' => 0,
+        'end_date'   => 4294967296,
+        'date'       => 0,
+        'next'       => 0,
+        'last'       => 0,
+        'sort'       => 'ASC',
+        'total'      => 1
+      }
+    end
+
+    def sensor_data_get
+    end
+
+    def sensor_data_post
+    end
+
+    def sensor_data_delete
+    end
+
+    def sensors_data_post
+    end
+
+    #
+    # Services
+    #
+
+    def services_get
+    end
+
+    def services_post_parameters
+    end
+
+    def serives_post
+    end
+
+    def services_delete
+    end
+
+    def services_get_expression
+    end
+
+    def services_set_parameters
+    end
+
+    def services_set_expression
+    end
+
+    def services_set_method
+    end
+
+    def services_get_method
+    end
+
+    def services_set_use_data_timestamp
+    end
+
+    #
+    # Users
+    #
+
+
+
+
+
+
 
 
   end
