@@ -1,6 +1,8 @@
 require 'open-uri'
 require 'net/http'
 require 'net/https'
+require 'digest/md5'
+require 'json'
 
 module Commonsense
 
@@ -62,13 +64,13 @@ module Commonsense
         @server_url = 'api.rc.dev.sense-os.nl'
         @use_https = false
       else
-        raise Exception "No valid server type specified!"
+        raise Exception, "No valid server type specified!"
       end
     end
 
     def set_authentication_method(method)
       if !@valid_authentication_methods.include?(method)
-        raise Exception "No valid authentication type specified!"
+        raise Exception, "No valid authentication type specified!"
       else
         @authentication = method
       end
@@ -98,7 +100,8 @@ module Commonsense
       )
         # Authenticating a user
       
-        body = parameters.to_json
+        http_url = '/login.json' #?
+        body     = parameters.to_json
 
       else
 
@@ -112,7 +115,7 @@ module Commonsense
 
         when :authenticating_oauth
           heads["Content-type"] = "application/x-www-form-urlencoded"
-          http_url = "#{@url}?#{URI.encode_www_form(parameters)}"
+          http_url = "#{url}?#{URI.encode_www_form(parameters)}"
 
         when :authenticating_session_id
           body = parameters.to_json
@@ -126,7 +129,7 @@ module Commonsense
           if !parameters.empty?
             if (method == :get or method == :delete)
               heads["Content-type"] = "application/x-www-form-urlencoded"
-              http_url = "#{@url}?#{URI.encode_www_form(parameters)}"
+              http_url = "#{url}?#{URI.encode_www_form(parameters)}"
             else
               body = parameters.to_json
             end
@@ -136,7 +139,7 @@ module Commonsense
           parameters['API_KEY'] = @api_key
           if (method == :get or method == :delete)
             heads["Content-type"] = "application/x-www-form-urlencoded"
-            http_url = "#{@url}?#{URI.encode_www_form(parameters)}"
+            http_url = "#{url}?#{URI.encode_www_form(parameters)}"
           else
             body = parameters.to_json
           end
@@ -150,24 +153,36 @@ module Commonsense
 
       #
       # Call server
-      # TODO : move to own method
+      # TODO : move to own method, re-use server object
       #
+
+      response = nil
 
       begin
         server = Net::HTTP.new(@server_url, @use_https ? 443 : 80)
         server.use_ssl = @use_https
 
         server.start do |http|
-          klass = case @method
+          klass = case method
           when :get then Net::HTTP::Get
+          when :put then Net::HTTP::Put
           when :post then Net::HTTP::Post
           when :delete then Net::HTTP::Delete
           else
-            raise Exception "No valid http method passed!"
+            raise Exception, "No valid http method passed!"
           end
-          request  = klass.new(url)
+
+          log "Calling #{@server_url}"
+          log "Requesting #{http_url}"
+          log "Requesting with body #{body.to_s}"
+          # request  = klass.new(http_url)
+          request  = klass.new('/login.json')
+          request.body = body
           response = http.request(request)
-          resp     = response.body
+
+          log response.body.to_s
+
+          @body = response.body
         end
 
       rescue SocketError
@@ -179,12 +194,9 @@ module Commonsense
       # @stats    = @response.status
 
       # TODO : Set headers from response - sets cookies?
-
-      if @status == 200 || @status == 201 || @status == 302
-        true
-      else
-        false
-      end
+      
+      log "HTTPOK? #{(response.kind_of? Net::HTTPSuccess).to_s}"
+      response.kind_of? Net::HTTPSuccess
 
     end
 
@@ -205,9 +217,11 @@ module Commonsense
     def authenticate_session_id(username, password)
       set_authentication_method(:authenticating_session_id)
 
+      md5hash =Digest::MD5.hexdigest(password)
+
       parameters = {
         'username' => username,
-        'password' => password
+        'password' => md5hash
       }
 
       response = {}
@@ -231,6 +245,7 @@ module Commonsense
           false
         end
 
+        true
       else
         set_not_authenticated('api call unsuccessful')
         false
@@ -343,10 +358,14 @@ module Commonsense
       sense_api_call(url, :put, parameters)
     end
 
-    def sensor_metatags_delte
+    def sensor_metatags_delete(sensor_id, namespace='default')
+      params = { 'namespace'  => namespace}
+      url    = "/sensors/#{sensor_id}/metatags.json"
+      sense_api_call(url, :post, params)
     end
 
     def sensors_find
+		# if self.__SenseApiCall__("/sensors/find.json?{0}".format(urllib.urlencode(parameters,True)), "POST", parameters=filters):
     end
 
     def group_sensors_find
@@ -659,16 +678,66 @@ module Commonsense
       }
     end
 
+    def domains_get
+      sense_api_call("/domains.json", :get)
+    end
 
+    def domain_add_user_post_parameters
+      {
+        'users' => [{ 'id' => '1' }]
+      }
+    end
 
+    def domain_add_user_post(parameters, domain_id)
+      sense_api_call("/domains/#{domain_id}/users.json", :post, parameters)
+    end
 
+    #
+    # Data processor
+    #
 
+    def data_processor_get_parameters
+      {
+        'total'    => 0,
+        'page'     => 0,
+        'per_page' => 1000
+      }
+    end
 
+    def data_processors_get(parameters)
+      sense_api_call("/dataprocessors.json", :get, parameters)
+    end
 
+    def data_processors_post_parameters
+		  {
+        'dataprocessor' => {
+          'command'            => '',
+          'execution_interval' => '',
+          'last_start_time'    => ''
+      }, 
+        'sensor' => {
+          'name'           => '',
+          'display_name'   => '',
+          'device_type'    => '',
+          'data_type'      => '',
+          'data_structure' => ''
+        }
+      }
+    end
 
+    def data_processors_post(parameters)
+      sense_api_call("/dataprocessors.json", :post, parameters)
+    end
 
+    def data_processors_delete(dataProcessorId)
+      sense_api_call("/dataprocessors/#{dataProcessorId}.json", :delete, parameters)
+    end
 
+    private
 
+    def log(msg)
+      puts msg if @verbose
+    end
 
   end
 
