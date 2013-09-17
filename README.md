@@ -1,29 +1,14 @@
-# Commonsense
+# commonsense-rb
 
-CommonSense API implementation
-
-## Installation
-
-Add this line to your application's Gemfile:
-
-    gem 'commonsense'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install commonsense
+Sense-OS API implementation (exp/WIP)
 
 ## Usage
 
-TODO: Write usage instructions here
+Check out the git repo,
 
-## Contributing
+    $ bundle install
+    $ export SENSE_USER=username
+    $ export SENSE_PASS=password
+    $ bundle exec example/run.rb
+    $ bundle console
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
