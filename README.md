@@ -12,3 +12,7 @@ Check out the git repo,
     $ bundle exec example/run.rb
     $ bundle console
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/michiel/commonsense-rb/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
