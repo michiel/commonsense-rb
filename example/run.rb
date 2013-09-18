@@ -2,6 +2,11 @@
 
 require 'commonsense/sense-ng'
 
+if ENV['SENSE_USER'].nil? or ENV['SENSE_PASS'].nil?
+  puts "Missing SENSE_USER or SENSE_PASS env var, aborting ..."
+  exit 1
+end
+
 @sense = Commonsense::SenseNG.new
 @sense.verbose = true
 @sense.set_server :live
