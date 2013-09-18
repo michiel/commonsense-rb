@@ -10,8 +10,8 @@ module Commonsense
     attr_accessor :use_https, :verbose
 
     def initialize(args={})
+      @verbose = args[:verbose] || false
       set_server(args[:server] || :live)
-      init_server
     end
 
     def set_server(server)
@@ -30,6 +30,7 @@ module Commonsense
       else
         raise Exception, "No valid server type specified!"
       end
+      init_server
     end
 
     def login(username, password)
