@@ -40,7 +40,7 @@ module Commonsense
         'password' => md5hash
       }
 
-      res = call_post('/login.json', params)
+      res = call(:post, '/login.json', params)
       @session_id = res.env[:response_headers]["X-SESSION_ID"] 
     end
 
@@ -52,12 +52,16 @@ module Commonsense
       res_to_json(call_get("/#{type}/#{id}.json"))
     end
 
+    def post(type, id, obj)
+      res_to_json(call(:post, "/#{type}/#{id}.json", obj))
+    end
+
     def put(type, id, obj)
-      res_to_json(call_put("/#{type}/#{id}.json", obj))
+      res_to_json(call(:put, "/#{type}/#{id}.json", obj))
     end
 
     def delete(type, id)
-      res_to_json(call_delete("/#{type}/#{id}.json"))
+      res_to_json(call(:delete, "/#{type}/#{id}.json"))
     end
 
     private
@@ -70,46 +74,34 @@ module Commonsense
       end
     end
 
-    def call_delete(path, params={})
-      log "PUTing #{path} with #{params.to_s}"
-      @conn.put do |req|
+    def call(method, path, params={})
+      log "#{method.to_s}'ing #{path} with #{params.to_s}"
+      @conn.send(method) do |req|
+        req_set_json req
+        req_set_session req
         req.url path
-        req.headers['Content-Type'] = 'application/json'
-        req.headers['X-SESSION_ID'] = @session_id if @session_id
-        req.body = params.to_json
-      end
-    end
-
-    def call_put(path, params={})
-      log "PUTing #{path} with #{params.to_s}"
-      @conn.put do |req|
-        req.url path
-        req.headers['Content-Type'] = 'application/json'
-        req.headers['X-SESSION_ID'] = @session_id if @session_id
-        req.body = params.to_json
-      end
-    end
-
-    def call_post(path, params={})
-      log "POSTing #{path} with #{params.to_s}"
-      @conn.post do |req|
-        req.url path
-        req.headers['Content-Type'] = 'application/json'
-        req.headers['X-SESSION_ID'] = @session_id if @session_id
         req.body = params.to_json
       end
     end
 
     def call_get(path, params={})
-      log "GETing #{path} with #{params.to_s}"
+      log "get'ing #{path} with #{params.to_s}"
       @conn.get do |req|
-        req.headers['X-SESSION_ID'] = @session_id
+        req_set_session req
         req.url path, params
       end
     end
 
     def log(msg)
       puts msg if @verbose
+    end
+
+    def req_set_json(req)
+      req.headers['Content-Type'] = 'application/json'
+    end
+
+    def req_set_session(req)
+      req.headers['X-SESSION_ID'] = @session_id if @session_id
     end
 
     def res_to_json(res)
